@@ -1,0 +1,40 @@
+name: Build ota
+
+on: workflow_dispatch
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          ref: main
+
+      - name: Update OTA
+        run: |
+          chmod 0755 ./ota.sh
+          ./ota.sh
+
+      - name: Push Commits OTA
+        continue-on-error : true
+        run : |
+          git config --global user.email "lixp@live.com"
+          git config --global user.name "ilxp"
+          git add . || echo "1"
+          git commit -m "update to newest versions" -a;
+          git push "https://ilxp:$workflow_token@github.com/ilxp/builder.git" main
+          
+      - name: Delete workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+         retain_days: 1
+         keep_minimum_runs: 1
+    
+
+          
+          
+        

@@ -1,0 +1,9 @@
+{
+  "x86_64": [
+    {
+      "build_date": "1704032022",
+      "sha256sum": "c6de631d018b7a67b333bc96541272d45b8229b0f461615400862e559f5a73b5",
+      "url": "https://mirror.ghproxy.com/https://github.com/ilxp/builder/releases/download/v23.05.2/oprx-23.05.2-x86-64-generic-squashfs-combined-efi.img.gz"
+    }
+  ]
+}

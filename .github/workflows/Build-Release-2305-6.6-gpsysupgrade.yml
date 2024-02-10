@@ -152,7 +152,7 @@ jobs:
         elif [ "${{ matrix.model }}" = "x86_64" ]; then
           #cp -a openwrt/bin/targets/x86/*/*-ext4-combined-efi.img.gz rom/
           cp -a openwrt/bin/targets/x86/*/*-squashfs-combined-efi.img.gz rom/
-          cp -a openwrt/bin/targets/x86/*/*-generic-rootfs.tar.gz rom/  
+          #cp -a openwrt/bin/targets/x86/*/*-generic-rootfs.tar.gz rom/  
           rename -v "s/openwrt-/${{ env.date1 }}-OprX-23.05-/" rom/* || true
           #cp -a openwrt/bin/targets/x86/*/*-x86-64-generic.manifest info/manifest.txt
           cp -a openwrt/bin/targets/x86/*/config.buildinfo info/config.buildinfo

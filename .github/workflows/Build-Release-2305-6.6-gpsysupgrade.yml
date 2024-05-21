@@ -53,8 +53,10 @@ jobs:
           echo "kmod_repo=kmod-aarch64" >> "$GITHUB_ENV"
         elif [ "${{ matrix.model }}" = "x86_64" ]; then
           echo "kmod_repo=openwrt-kmod-x86_64" >> "$GITHUB_ENV"
+        elif [ "${{ matrix.model }}" = "netgear_r8500" ]; then
+          echo "kmod_repo=kmod-bcm53xx" >> "$GITHUB_ENV"
         fi
-        
+   
     - name: Free disk space
       run: |
         sudo rm -rf /etc/apt/sources.list.d
@@ -71,7 +73,7 @@ jobs:
         sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
         rm -rf ~/{.cargo,.dotnet,.rustup}
         df -Th
-        
+
     - name: Create VG & LV
       run: |
         mnt_size=$(expr $(df -h /mnt | tail -1 | awk '{print $4}' | sed 's/[[:alpha:]]//g' | sed 's/\..*//') - 1)
@@ -92,27 +94,34 @@ jobs:
         sudo mount /dev/github/runner /builder
         sudo chown -R runner.runner /builder
         df -Th
-        
+
     - name: Build System Setup
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo sh -c 'echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-17 main" >> /etc/apt/sources.list'
-        sudo sh -c 'echo "deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-17 main" >> /etc/apt/sources.list'
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo apt-get update
-        sudo apt-get install -y build-essential flex bison clang-17 cmake g++ gawk gcc-multilib g++-multilib gettext git libfuse-dev libncurses5-dev libssl-dev python3 python3-pip python3-ply python3-distutils python3-pyelftools rsync unzip zlib1g-dev file wget subversion patch upx-ucl autoconf automake curl asciidoc binutils bzip2 lib32gcc-s1 libc6-dev-i386 uglifyjs msmtp texinfo libreadline-dev libglib2.0-dev xmlto libelf-dev libtool autopoint antlr3 gperf ccache swig coreutils haveged scons libpython3-dev rename qemu-utils
+        sudo apt-get install -y build-essential flex bison cmake g++ gawk gcc-multilib g++-multilib gettext git libfuse-dev libncurses5-dev libssl-dev python3 python3-pip python3-ply python3-distutils python3-pyelftools rsync unzip zlib1g-dev file wget subversion patch upx-ucl autoconf automake curl asciidoc binutils bzip2 lib32gcc-s1 libc6-dev-i386 uglifyjs msmtp texinfo libreadline-dev libglib2.0-dev xmlto libelf-dev libtool autopoint antlr3 gperf ccache swig coreutils haveged scons libpython3-dev rename qemu-utils
         sudo apt-get clean
         git config --global user.name 'GitHub Actions' && git config --global user.email 'noreply@github.com'
-        df -Th
-        
+
+    - name: Install LLVM
+      run: |
+        export PATH="/opt/clang/bin:$PATH"
+        mkdir /opt/clang
+        curl -LO https://github.com/sbwml/redhat-llvm-project/releases/download/18.1.6/clang-18.1.6-x86_64-redhat-linux.tar.xz --progress-bar
+        sudo tar --strip-components=1 -C /opt/clang -xf clang-18.1.6-x86_64-redhat-linux.tar.xz
+        rm -rf clang-18.1.6-x86_64-redhat-linux.tar.xz
+        clang --version
+
     - name: Compile OpenWrt
       id: compile
       continue-on-error: true
       working-directory: /builder
       run: |
-        #BUILD_FAST=y ENABLE_OTA=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC14=y USE_MOLD=y bash <(curl -sS ${{ secrets.script_url_general }}) ${{ matrix.tag.type }} ${{ matrix.model }}
-        BUILD_FAST=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC14=y USE_MOLD=y bash <(curl -sS ${{ secrets.script_url_2305 }}) ${{ matrix.tag.type }} ${{ matrix.model }}
+        export PATH="/opt/clang/bin:$PATH"
+        [ "${{ matrix.model }}" != "netgear_r8500" ] && export KERNEL_CLANG_LTO=y
+        #BUILD_FAST=y ENABLE_OTA=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC15=y USE_MOLD=y bash <(curl -sS ${{ secrets.script_url_general }}) ${{ matrix.tag.type }} ${{ matrix.model }}
+        BUILD_FAST=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC15=y USE_MOLD=y bash <(curl -sS ${{ secrets.script_url_2305 }}) ${{ matrix.tag.type }} ${{ matrix.model }}
         cd openwrt
         tags=$(git describe --abbrev=0 --tags)
         echo "latest_release=$tags" >>$GITHUB_ENV
@@ -120,7 +129,9 @@ jobs:
         
     #- name: Extensive logs after a failed compilation
       #if: steps.compile.outcome == 'failure'
+      #working-directory: /builder
       #run: |
+        #export PATH="/opt/clang/bin:$PATH"
         #cd openwrt
         #make V=s
       
@@ -128,9 +139,11 @@ jobs:
       if: steps.compile.outcome == 'failure'
       working-directory: /builder
       run: |
+         export PATH="/opt/clang/bin:$PATH"
          cat openwrt/.config
          echo '================================================================'
-         cd openwrt && make -j1 V=s
+         cd openwrt 
+         make V=s
 
     - name: Prepare Firmware Files
       working-directory: /builder

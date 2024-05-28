@@ -205,11 +205,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.workflow_token }}
       with:
         files: ${{ env.WORKDIR }}/rom/*
-        name: OprX_${{ matrix.target.arch }}_${{ matrix.target.kernel }}
+        name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
         tag_name: ${{ matrix.target.arch }}
         
     #- name: Create release
-      #uses: ncipollo/release-action@v1.13.0
+      #uses: ncipollo/release-action@v1.14.0
       #with:
         #name: OpenWrt-${{ env.latest_release }}
         #allowUpdates: true
@@ -221,7 +221,7 @@ jobs:
 
     - name: Release kmods
       if: env.release_kmod == 'true'
-      uses: ncipollo/release-action@v1.13.0
+      uses: ncipollo/release-action@v1.14.0
       with:
         #name: OpenWrt-${{ env.latest_release }}
         name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
@@ -251,9 +251,9 @@ jobs:
         #dangerous-clean-slate: true    
    
     - name: Release OTA
-      uses: ncipollo/release-action@v1.13.0
+      uses: ncipollo/release-action@v1.14.0
       with:
-        name: ${{ matrix.target.arch }}-${{ matrix.target.kernel }}
+        name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
         allowUpdates: true
         tag: ${{ matrix.target.arch }}
         commit: main  # 这里必须更改为你仓库的实际分支名称否则固件编译后无法发布到 releases，如：main、master

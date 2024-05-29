@@ -191,12 +191,12 @@ jobs:
         #sha256sum * > sha256sums.txt
         #echo "<center><h1>x86_64 虚拟机平台镜像</h1></center>" > README.md
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        #name: ${{ matrix.model }}-${{ matrix.tag.version }}
-        name: ${{ env.date1 }}_OprX_${{ matrix.target.arch }}_${{ matrix.target.kernel }}
-        path: ${{ env.WORKDIR }}/rom/*.gz  
+    #- name: Upload artifacts
+      #uses: actions/upload-artifact@v4
+      #with:
+        ##name: ${{ matrix.model }}-${{ matrix.tag.version }}
+        #name: ${{ env.date1 }}-OprX-${{ matrix.target.arch }}-${{ matrix.target.kernel }}
+        #path: ${{ env.WORKDIR }}/rom/*.gz  
         
     - name: 上传releases固件发布
       uses: softprops/action-gh-release@master
@@ -205,7 +205,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.workflow_token }}
       with:
         files: ${{ env.WORKDIR }}/rom/*
-        name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
+        name: ${{ matrix.target.arch }}-${{ matrix.target.kernel }}
         tag_name: ${{ matrix.target.arch }}
         
     #- name: Create release
@@ -224,7 +224,7 @@ jobs:
       uses: ncipollo/release-action@v1.14.0
       with:
         #name: OpenWrt-${{ env.latest_release }}
-        name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
+        name: ${{ matrix.target.arch }}-${{ matrix.target.kernel }}
         allowUpdates: true
         #tag: ${{ env.latest_release }}
         tag: ${{ matrix.target.arch }}
@@ -253,7 +253,7 @@ jobs:
     - name: Release OTA
       uses: ncipollo/release-action@v1.14.0
       with:
-        name: ${{ matrix.target.arch }}_${{ matrix.target.kernel }}
+        name: ${{ matrix.target.arch }}-${{ matrix.target.kernel }}
         allowUpdates: true
         tag: ${{ matrix.target.arch }}
         commit: main  # 这里必须更改为你仓库的实际分支名称否则固件编译后无法发布到 releases，如：main、master

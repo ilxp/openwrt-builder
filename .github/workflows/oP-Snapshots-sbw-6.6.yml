@@ -96,8 +96,9 @@ jobs:
       working-directory: /builder
       run: |
         [ "${{ matrix.model }}" != "netgear_r8500" ] && export KERNEL_CLANG_LTO=y
-        export BUILD_FAST=y ENABLE_CCACHE=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC15=y ENABLE_MOLD=y
+        #export BUILD_FAST=y ENABLE_CCACHE=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC15=y ENABLE_MOLD=y
         #bash <(curl -sS ${{ secrets.script_url_general }}) ${{ matrix.tag.type }} ${{ matrix.model }}
+        export ENABLE_CCACHE=y ENABLE_BPF=y ENABLE_LTO=y ENABLE_LRNG=y USE_GCC15=y ENABLE_MOLD=y
         bash <(curl -sS ${{ secrets.script_url_oP-6.6 }}) ${{ matrix.tag.type }} ${{ matrix.model }}
         build_date=$(date "+%Y-%m-%d")
         echo "build_date=$build_date" >> $GITHUB_ENV

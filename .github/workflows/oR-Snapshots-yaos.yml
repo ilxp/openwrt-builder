@@ -23,7 +23,7 @@ jobs:
           - x86_64
           #- netgear_r8500
         tag:
-          - type: dev
+          - type: rc2
             version: openwrt-24.10          
         target:
           - arch: "x86_64"
